@@ -18,9 +18,7 @@ import java.util.UUID;
 public class GreetingPersistenceEntity {
 
     @Id
-    private Long id;
-    private UUID traceId;
+    private UUID id;
     private String message;
-    private String recipientEmail;
     private OffsetDateTime createdAt;
 }

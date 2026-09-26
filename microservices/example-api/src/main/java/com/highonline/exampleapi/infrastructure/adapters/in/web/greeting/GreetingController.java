@@ -15,7 +15,6 @@ public class GreetingController {
 
     private final ForManagingGreetings forManagingGreetings;
     private final ForQueryingGreetings forQueryingGreetings;
-    private final ForTranslatingGreetings forTranslatingGreetings;
 
     @GetMapping
     public PageModel<GreetingOutput> findAll(Pageable pageable) {
@@ -31,10 +30,5 @@ public class GreetingController {
     @ResponseStatus(HttpStatus.CREATED)
     public GreetingOutput create(@RequestBody @Valid GreetingInput input) {
         return forQueryingGreetings.findById(forManagingGreetings.create(input));
-    }
-
-    @GetMapping("/{id}/translation")
-    public TranslationOutput translate(@PathVariable String id, @RequestParam String lang) {
-        return forTranslatingGreetings.translate(id, lang);
     }
 }

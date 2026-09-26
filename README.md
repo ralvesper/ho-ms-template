@@ -6,8 +6,9 @@ Template multi-module Gradle para microsserviços Spring Boot 4 (Java 25). Pacot
 
 | Módulo | O que é |
 |---|---|
+| `template/` | Esqueleto de microsserviço, sem domínio: camadas vazias, config, Flyway, actuator, testes de arquitetura e de contexto. Ponto de partida de novos serviços |
 | `microservices/common` | Código compartilhado: exceptions de domínio, `ApiExceptionHandler` (ProblemDetail), `PageModel` |
-| `microservices/example-api` | API REST + JPA + Flyway + Postgres. Exemplo: `/api/v1/greetings` (ids TSID, trace UUIDv7, e-mail validado com commons-validator, cliente RestClient de tradução, contract tests) |
+| `microservices/example-api` | O `template` com um exemplo mínimo preenchido: `/api/v1/greetings` (criar e buscar), uma camada de cada tipo |
 | `apps/example-web` | Web Thymeleaf mínimo que consome a API (porta 9080) |
 
 ## Estrutura de pacotes (hexagonal)
@@ -59,12 +60,14 @@ docker compose up -d                          # Postgres (bancos exampleapi e ex
 
 ## Criando um novo microsserviço
 
-1. Copie `microservices/example-api` para `microservices/<nome>`.
+1. Copie `template/` para `microservices/<nome>` (sem a pasta `build`).
 2. Adicione `include 'microservices:<nome>'` no `settings.gradle`.
-3. Renomeie o pacote `com.highonline.exampleapi` e o `ExampleApiApplication`; use `greeting` como modelo de cada camada.
-4. Troque `example-api` por `<nome>` no `build.gradle` (jar e imagem), no `Dockerfile` e no `spring.application.name`.
-5. Troque o banco `exampleapi` nos `application-*-env.yml` e em `etc/postgres/init-user-db.sh`.
-6. Apague os pacotes `greeting` de cada camada, a migration `V1__create_greeting.sql` e o contrato em `src/contractTest/resources/contracts` (ajuste o `ContractBase`).
+3. Renomeie o pacote `com.highonline.template` e a classe `TemplateApplication`.
+4. Troque `template` por `<nome>` no `build.gradle` (jar e imagem), no `Dockerfile`, no `spring.application.name` e nos `application-*-env.yml` (nome do banco).
+5. Crie o banco em `etc/postgres/init-user-db.sh`.
+6. Use `microservices/example-api` como modelo de cada camada (`greeting`).
+
+`template/` fica no build para não quebrar sem ninguém perceber; remova-o do `settings.gradle` em um projeto derivado se não precisar mais dele.
 
 ## Convenções
 

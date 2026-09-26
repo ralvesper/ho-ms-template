@@ -1,58 +1,32 @@
 plugins {
     id 'org.springframework.boot'
-    alias(libs.plugins.spring.cloud.contract)
 }
 
 description = 'Example API'
-
-configurations {
-    mockitoAgent { transitive = false }
-}
 
 dependencies {
     implementation project(':microservices:common')
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-flyway'
-    implementation 'org.springframework.boot:spring-boot-starter-restclient'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.flywaydb:flyway-database-postgresql'
-
-    implementation libs.commons.validator
-    implementation libs.uuid.generator
-    implementation libs.hypersistence.tsid
 
     runtimeOnly 'org.postgresql:postgresql'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-restclient-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-flyway-test'
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testImplementation 'org.testcontainers:testcontainers-postgresql'
-    testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
-    testImplementation libs.assertj
     testImplementation libs.archunit
-    constraints {
-        testImplementation(libs.rest.assured) { version { strictly libs.versions.rest.assured.get() } }
-        testImplementation(libs.rest.assured.spring.mock.mvc) { version { strictly libs.versions.rest.assured.get() } }
-    }
-
-    mockitoAgent 'org.mockito:mockito-core'
-}
-
-dependencyManagement {
-    imports { mavenBom "org.springframework.cloud:spring-cloud-dependencies:${libs.versions.spring.cloud.asProvider().get()}" }
-}
-
-// Contratos em src/contractTest/resources/contracts; testes gerados estendem ContractBase.
-contracts {
-    baseClassForTests = 'com.highonline.exampleapi.ContractBase'
 }
 
 // *IT (precisam de Docker) rodam em integrationTest; o resto em test.
 test {
-    filter { excludeTestsMatching("*IT") }
+    filter {
+        excludeTestsMatching("*IT")
+        failOnNoMatchingTests = false
+    }
 }
 
 tasks.register('integrationTest', Test) {
@@ -64,11 +38,7 @@ tasks.register('integrationTest', Test) {
     filter { includeTestsMatching "*IT" }
 }
 
-tasks.withType(Test).configureEach {
-    jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
-}
-
-tasks.named('check') { dependsOn contractTest, integrationTest }
+tasks.named('check') { dependsOn integrationTest }
 
 bootJar { archiveFileName = 'example-api.jar' }
 

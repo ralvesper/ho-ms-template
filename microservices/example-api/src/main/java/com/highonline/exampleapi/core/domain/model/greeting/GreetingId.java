@@ -1,17 +1,16 @@
 package com.highonline.exampleapi.core.domain.model.greeting;
 
-import io.hypersistence.tsid.TSID;
+import java.util.UUID;
 
-/** TSID: ordenável por tempo, exposto como string na API e como bigint no banco. */
-public record GreetingId(long value) {
+public record GreetingId(UUID value) {
 
     public static GreetingId generate() {
-        return new GreetingId(TSID.fast().toLong());
+        return new GreetingId(UUID.randomUUID());
     }
 
     public static GreetingId from(String raw) {
         try {
-            return new GreetingId(TSID.from(raw).toLong());
+            return new GreetingId(UUID.fromString(raw));
         } catch (IllegalArgumentException e) {
             throw new GreetingNotFoundException(raw);
         }
@@ -19,6 +18,6 @@ public record GreetingId(long value) {
 
     @Override
     public String toString() {
-        return TSID.from(value).toString();
+        return value.toString();
     }
 }

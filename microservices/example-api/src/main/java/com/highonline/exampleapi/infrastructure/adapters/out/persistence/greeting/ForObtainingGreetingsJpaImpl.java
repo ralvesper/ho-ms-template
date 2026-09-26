@@ -29,7 +29,6 @@ public class ForObtainingGreetingsJpaImpl implements ForObtainingGreetings {
     }
 
     private GreetingOutput toOutput(GreetingPersistenceEntity e) {
-        return new GreetingOutput(new GreetingId(e.getId()).toString(), e.getTraceId(), e.getMessage(),
-                e.getRecipientEmail(), e.getCreatedAt());
+        return new GreetingOutput(e.getId().toString(), e.getMessage(), e.getCreatedAt());
     }
 }

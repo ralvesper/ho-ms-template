@@ -31,7 +31,7 @@ class GreetingControllerIT {
     @Test
     void createsAndFetchesGreeting() throws Exception {
         mvc.perform(post("/api/v1/greetings").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"message\":\"oi\",\"recipientEmail\":\"a@b.com\"}"))
+                        .content("{\"message\":\"oi\"}"))
                 .andExpect(status().isCreated());
 
         mvc.perform(get("/api/v1/greetings"))
@@ -52,14 +52,7 @@ class GreetingControllerIT {
     }
 
     @Test
-    void rejectsInvalidEmailWith422() throws Exception {
-        mvc.perform(post("/api/v1/greetings").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"message\":\"oi\",\"recipientEmail\":\"nope\"}"))
-                .andExpect(status().isUnprocessableEntity());
-    }
-
-    @Test
     void unknownIdIs404() throws Exception {
-        mvc.perform(get("/api/v1/greetings/0DZ1XNY3F9Q3E")).andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/greetings/00000000-0000-0000-0000-000000000000")).andExpect(status().isNotFound());
     }
 }

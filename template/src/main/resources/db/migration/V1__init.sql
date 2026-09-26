@@ -1,0 +1,1 @@
+-- primeira migration deste microsserviço

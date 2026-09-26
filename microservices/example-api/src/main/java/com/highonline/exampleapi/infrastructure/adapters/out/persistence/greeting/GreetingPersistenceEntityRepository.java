@@ -2,5 +2,7 @@ package com.highonline.exampleapi.infrastructure.adapters.out.persistence.greeti
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface GreetingPersistenceEntityRepository extends JpaRepository<GreetingPersistenceEntity, Long> {
+import java.util.UUID;
+
+public interface GreetingPersistenceEntityRepository extends JpaRepository<GreetingPersistenceEntity, UUID> {
 }

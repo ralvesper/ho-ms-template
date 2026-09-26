@@ -8,7 +8,7 @@ Template multi-module Gradle para microsserviços Spring Boot 4 (Java 25). Pacot
 |---|---|
 | `template/` | Esqueleto de microsserviço, sem domínio: camadas vazias, config, Flyway, actuator, testes de arquitetura e de contexto. Ponto de partida de novos serviços |
 | `microservices/common` | Código compartilhado: exceptions de domínio, `ApiExceptionHandler` (ProblemDetail), `PageModel` |
-| `microservices/example-api` | O `template` com um exemplo mínimo preenchido: `/api/v1/greetings` (criar e buscar), uma camada de cada tipo |
+| `microservices/example-api` | O `template` com dois agregados de exemplo: `greeting` (`/api/v1/greetings`, criar/alterar/buscar) e `todo` (`/api/v1/todos`, ciclo de vida completo com eventos) |
 | `apps/example-web` | Web Thymeleaf mínimo que consome a API (porta 9080) |
 
 ## Estrutura de pacotes (hexagonal)
@@ -37,6 +37,13 @@ A entidade de domínio estende `AbstractEventSourceEntity` (`common`) e chama `p
 (ex.: `Greeting.brandNew` → `GreetingCreatedEvent`). O provider de persistência copia os eventos para a
 entity JPA (`AbstractAggregateRoot`, via `GreetingPersistenceEntityAssembler.merge`) e, no `save()`, o Spring Data os publica; um `@EventListener` em
 `adapters/in/listener` reage a eles. Depois do `save` o provider limpa os eventos do agregado.
+
+### Exemplo: `todo`
+
+`Todo` mostra o ciclo de vida inteiro: `TodoCreatedEvent`, `TodoTitleChangedEvent`, `TodoCompletedEvent`,
+`TodoReopenedEvent` e `TodoRemovedEvent`. Transições inválidas (concluir duas vezes, reabrir sem concluir)
+lançam `DomainException` (422) e não publicam evento. Na exclusão, o domínio chama `markAsRemoved()` e o
+provider registra os eventos na entity antes do `delete`, que o Spring Data também publica.
 
 ## Persistência: Assembler / Disassembler
 

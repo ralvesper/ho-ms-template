@@ -16,10 +16,13 @@ public class GreetingsPersistenceProvider implements Greetings {
     @Transactional
     @Override
     public void add(Greeting greeting) {
-        repository.save(GreetingPersistenceEntity.builder()
+        GreetingPersistenceEntity entity = GreetingPersistenceEntity.builder()
                 .id(greeting.getId().value())
                 .message(greeting.getMessage())
                 .createdAt(greeting.getCreatedAt())
-                .build());
+                .build();
+        entity.addEvents(greeting.domainEvents());
+        repository.save(entity);
+        greeting.clearDomainEvents();
     }
 }

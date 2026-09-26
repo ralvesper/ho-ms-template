@@ -17,4 +17,13 @@ class GreetingTest {
     void malformedIdIsNotFound() {
         assertThatThrownBy(() -> GreetingId.from("!!")).isInstanceOf(GreetingNotFoundException.class);
     }
+
+    @Test
+    void brandNewPublishesCreatedEventAndExistingDoesNot() {
+        Greeting g = Greeting.brandNew("oi");
+        assertThat(g.domainEvents()).singleElement().isInstanceOf(GreetingCreatedEvent.class);
+        g.clearDomainEvents();
+        assertThat(g.domainEvents()).isEmpty();
+        assertThat(Greeting.existing(g.getId(), "oi", g.getCreatedAt()).domainEvents()).isEmpty();
+    }
 }

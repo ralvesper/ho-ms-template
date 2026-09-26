@@ -22,6 +22,7 @@ core/
   application/<aggregate>/    application services (implementam ports/in)
 infrastructure/
   adapters/in/web/<aggregate>/            controllers
+  adapters/in/listener/<aggregate>/       listeners de eventos de domínio
   adapters/out/persistence/<aggregate>/   entity JPA, assembler/disassembler, provider
   adapters/out/web/<servico>/http/        clientes REST (implementam ports/out)
   config/                                 configurações transversais
@@ -29,6 +30,13 @@ infrastructure/
 
 `microservices/common` segue o mesmo padrão: `core.domain.model` (DomainException...) e
 `infrastructure.adapters.in.web` (PageModel, `exceptionhandler`).
+
+## Eventos de domínio
+
+A entidade de domínio estende `AbstractEventSourceEntity` (`common`) e chama `publishDomainEvent(...)`
+(ex.: `Greeting.brandNew` → `GreetingCreatedEvent`). O provider de persistência copia os eventos para a
+entity JPA (`AbstractAggregateRoot`) e, no `save()`, o Spring Data os publica; um `@EventListener` em
+`adapters/in/listener` reage a eles. Depois do `save` o provider limpa os eventos do agregado.
 
 ## Pré-requisitos
 

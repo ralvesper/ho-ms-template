@@ -8,3 +8,8 @@ spring:
   flyway:
     enabled: false
     locations: classpath:db/migration
+example-api:
+  translator:
+    url: http://localhost:8789
+    connect-timeout: 2s
+    read-timeout: 5s

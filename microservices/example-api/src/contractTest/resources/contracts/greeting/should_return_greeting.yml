@@ -1,0 +1,14 @@
+description: Retorna um greeting pelo id (TSID)
+request:
+  method: GET
+  urlPath: /api/v1/greetings/0DZ1XNY3F9Q3E
+response:
+  status: 200
+  headers:
+    Content-Type: application/json
+  matchers:
+    body:
+      - path: $.message
+        type: by_equality
+  body:
+    message: Hello, HighOnline!

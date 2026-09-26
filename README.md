@@ -7,7 +7,7 @@ Template multi-module Gradle para microsserviços Spring Boot 4 (Java 25). Pacot
 | Módulo | O que é |
 |---|---|
 | `microservices/common` | Código compartilhado: exceptions de domínio, `ApiExceptionHandler` (ProblemDetail), `PageModel` |
-| `microservices/example-api` | API REST + JPA + Flyway + Postgres. Exemplo: `/api/v1/greetings` |
+| `microservices/example-api` | API REST + JPA + Flyway + Postgres. Exemplo: `/api/v1/greetings` (ids TSID, trace UUIDv7, e-mail validado com commons-validator, cliente RestClient de tradução, contract tests) |
 | `apps/example-web` | Web Thymeleaf mínimo que consome a API (porta 9080) |
 
 ## Pré-requisitos
@@ -26,6 +26,7 @@ docker compose up -d                          # Postgres (bancos exampleapi e ex
 
 ```bash
 ./gradlew test              # unitários, sem Docker
+./gradlew contractTest      # contratos (Spring Cloud Contract), sem Docker
 ./gradlew integrationTest   # classes *IT, Testcontainers (precisa de Docker)
 ./gradlew build             # tudo
 ```
@@ -44,11 +45,12 @@ docker compose up -d                          # Postgres (bancos exampleapi e ex
 3. Renomeie o pacote `com.highonline.exampleapi` e o `ExampleApiApplication`.
 4. Troque `example-api` por `<nome>` no `build.gradle` (jar e imagem), no `Dockerfile` e no `spring.application.name`.
 5. Troque o banco `exampleapi` nos `application-*-env.yml` e em `etc/postgres/init-user-db.sh`.
-6. Apague o pacote `greeting` e a migration `V1__create_greeting.sql`.
+6. Apague o pacote `greeting`, a migration `V1__create_greeting.sql` e o contrato em `src/contractTest/resources/contracts` (ajuste o `ContractBase`).
 
 ## Convenções
 
 - Versões de plugins, Java, Lombok e JUnit ficam no `build.gradle` da raiz; os módulos só declaram o que é específico.
+- Falhas de serviços externos viram `BadGatewayException` (5xx), `GatewayTimeoutException` (I/O) ou `UnprocessableEntityException` (4xx), tratadas pelo `ApiExceptionHandler`.
 - Testes que precisam de Docker terminam em `IT`.
 - Migrations em `db/migration`; dados de exemplo em `db/testdata` (só no perfil `development`).
 - Perfis: `development` (padrão), `docker`, `production`, todos incluindo `base`.

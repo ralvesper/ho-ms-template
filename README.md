@@ -10,6 +10,25 @@ Template multi-module Gradle para microsserviços Spring Boot 4 (Java 25). Pacot
 | `microservices/example-api` | API REST + JPA + Flyway + Postgres. Exemplo: `/api/v1/greetings` (ids TSID, trace UUIDv7, e-mail validado com commons-validator, cliente RestClient de tradução, contract tests) |
 | `apps/example-web` | Web Thymeleaf mínimo que consome a API (porta 9080) |
 
+## Estrutura de pacotes (hexagonal)
+
+```
+core/
+  domain/model/<aggregate>/   entidades, value objects, interface do repositório (ex.: Greetings)
+  domain/model/commons/       value objects compartilhados (Email...)
+  ports/in/<aggregate>/       casos de uso (ForManagingX, ForQueryingX) + Input/Output
+  ports/out/<aggregate>/      dependências externas (ForObtainingX, ForTranslatingText)
+  application/<aggregate>/    application services (implementam ports/in)
+infrastructure/
+  adapters/in/web/<aggregate>/            controllers
+  adapters/out/persistence/<aggregate>/   entity JPA, assembler/disassembler, provider
+  adapters/out/web/<servico>/http/        clientes REST (implementam ports/out)
+  config/                                 configurações transversais
+```
+
+`microservices/common` segue o mesmo padrão: `core.domain.model` (DomainException...) e
+`infrastructure.adapters.in.web` (PageModel, `exceptionhandler`).
+
 ## Pré-requisitos
 
 JDK 25 (`asdf install`, versão em `.tool-versions`) e Docker (Postgres local e testes `*IT`). O Gradle vem pelo wrapper.
@@ -42,10 +61,10 @@ docker compose up -d                          # Postgres (bancos exampleapi e ex
 
 1. Copie `microservices/example-api` para `microservices/<nome>`.
 2. Adicione `include 'microservices:<nome>'` no `settings.gradle`.
-3. Renomeie o pacote `com.highonline.exampleapi` e o `ExampleApiApplication`.
+3. Renomeie o pacote `com.highonline.exampleapi` e o `ExampleApiApplication`; use `greeting` como modelo de cada camada.
 4. Troque `example-api` por `<nome>` no `build.gradle` (jar e imagem), no `Dockerfile` e no `spring.application.name`.
 5. Troque o banco `exampleapi` nos `application-*-env.yml` e em `etc/postgres/init-user-db.sh`.
-6. Apague o pacote `greeting`, a migration `V1__create_greeting.sql` e o contrato em `src/contractTest/resources/contracts` (ajuste o `ContractBase`).
+6. Apague os pacotes `greeting` de cada camada, a migration `V1__create_greeting.sql` e o contrato em `src/contractTest/resources/contracts` (ajuste o `ContractBase`).
 
 ## Convenções
 

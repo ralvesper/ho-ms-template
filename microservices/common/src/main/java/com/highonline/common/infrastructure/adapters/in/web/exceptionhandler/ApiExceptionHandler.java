@@ -11,6 +11,7 @@ import com.highonline.common.infrastructure.adapters.out.web.UnprocessableEntity
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.*;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -66,6 +67,15 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         problemDetail.setTitle("Unprocessable Entity");
         problemDetail.setDetail(e.getMessage());
         problemDetail.setType(URI.create("/errors/unprocessable-entity"));
+        return problemDetail;
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ProblemDetail handleOptimisticLockingFailure(ObjectOptimisticLockingFailureException e) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+        problemDetail.setTitle("Conflict");
+        problemDetail.setDetail("The resource was modified by someone else. Reload it and try again.");
+        problemDetail.setType(URI.create("/errors/conflict"));
         return problemDetail;
     }
 

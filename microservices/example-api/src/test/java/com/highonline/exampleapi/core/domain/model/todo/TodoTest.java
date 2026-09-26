@@ -25,7 +25,7 @@ class TodoTest {
         todo.reopen();
         todo.markAsRemoved();
 
-        assertThat(todo.domainEvents()).extracting(Object::getClass).containsExactly(
+        assertThat(todo.domainEvents()).hasExactlyElementsOfTypes(
                 TodoTitleChangedEvent.class, TodoCompletedEvent.class, TodoReopenedEvent.class, TodoRemovedEvent.class);
     }
 

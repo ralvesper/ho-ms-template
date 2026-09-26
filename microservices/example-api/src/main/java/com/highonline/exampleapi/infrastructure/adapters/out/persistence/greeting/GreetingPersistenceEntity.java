@@ -3,6 +3,7 @@ package com.highonline.exampleapi.infrastructure.adapters.out.persistence.greeti
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.*;
 import org.springframework.data.domain.AbstractAggregateRoot;
 
@@ -24,6 +25,9 @@ public class GreetingPersistenceEntity extends AbstractAggregateRoot<GreetingPer
     private UUID id;
     private String message;
     private OffsetDateTime createdAt;
+
+    @Version
+    private Long version;
 
     public void addEvents(Collection<Object> events) {
         events.forEach(this::registerEvent);

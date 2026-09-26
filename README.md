@@ -35,8 +35,15 @@ infrastructure/
 
 A entidade de domínio estende `AbstractEventSourceEntity` (`common`) e chama `publishDomainEvent(...)`
 (ex.: `Greeting.brandNew` → `GreetingCreatedEvent`). O provider de persistência copia os eventos para a
-entity JPA (`AbstractAggregateRoot`) e, no `save()`, o Spring Data os publica; um `@EventListener` em
+entity JPA (`AbstractAggregateRoot`, via `GreetingPersistenceEntityAssembler.merge`) e, no `save()`, o Spring Data os publica; um `@EventListener` em
 `adapters/in/listener` reage a eles. Depois do `save` o provider limpa os eventos do agregado.
+
+## Persistência: Assembler / Disassembler
+
+O domínio não conhece JPA. `GreetingPersistenceEntityAssembler` converte domínio → entity (`fromDomain`, ou
+`merge` sobre uma entity já carregada, preservando o `@Version`) e `GreetingPersistenceEntityDisassembler`
+faz o caminho inverso (`toDomainEntity`). O `GreetingsPersistenceProvider` usa os dois: `ofId` carrega e
+converte; `add` faz merge se já existe, ou cria.
 
 ## Pré-requisitos
 

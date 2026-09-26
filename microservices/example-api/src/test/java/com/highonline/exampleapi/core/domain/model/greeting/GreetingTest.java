@@ -24,6 +24,22 @@ class GreetingTest {
         assertThat(g.domainEvents()).singleElement().isInstanceOf(GreetingCreatedEvent.class);
         g.clearDomainEvents();
         assertThat(g.domainEvents()).isEmpty();
-        assertThat(Greeting.existing(g.getId(), "oi", g.getCreatedAt()).domainEvents()).isEmpty();
+        assertThat(Greeting.existing(g.getId(), "oi", g.getCreatedAt(), 0L).domainEvents()).isEmpty();
+    }
+
+    @Test
+    void changeMessagePublishesEventWithPreviousAndNewMessage() {
+        Greeting g = Greeting.existing(GreetingId.generate(), "oi", java.time.OffsetDateTime.now(), 0L);
+        g.changeMessage("olá");
+        assertThat(g.getMessage()).isEqualTo("olá");
+        assertThat(g.domainEvents()).singleElement().isEqualTo(
+                new GreetingMessageChangedEvent(g.getId(), "oi", "olá"));
+    }
+
+    @Test
+    void changeMessageRejectsBlank() {
+        Greeting g = Greeting.brandNew("oi");
+        assertThatThrownBy(() -> g.changeMessage(" "))
+                .isInstanceOf(com.highonline.common.core.domain.model.DomainException.class);
     }
 }

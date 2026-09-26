@@ -21,6 +21,12 @@ public class GreetingController {
         return PageModel.of(forQueryingGreetings.findAll(pageable));
     }
 
+    @PutMapping("/{id}")
+    public GreetingOutput changeMessage(@PathVariable String id, @RequestBody @Valid GreetingUpdateInput input) {
+        forManagingGreetings.changeMessage(id, input);
+        return forQueryingGreetings.findById(id);
+    }
+
     @GetMapping("/{id}")
     public GreetingOutput findById(@PathVariable String id) {
         return forQueryingGreetings.findById(id);

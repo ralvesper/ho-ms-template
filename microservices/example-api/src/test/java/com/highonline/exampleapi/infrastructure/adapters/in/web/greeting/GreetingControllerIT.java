@@ -7,6 +7,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import com.highonline.exampleapi.core.domain.model.greeting.GreetingCreatedEvent;
+import com.highonline.exampleapi.core.domain.model.greeting.GreetingMessageChangedEvent;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.MockMvc;
@@ -17,6 +18,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,6 +49,34 @@ class GreetingControllerIT {
         mvc.perform(get("/api/v1/greetings"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[?(@.message=='oi')]").exists());
+    }
+
+    @Test
+    void changesMessageAndPublishesEvent() throws Exception {
+        String body = mvc.perform(post("/api/v1/greetings").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"message\":\"oi\"}"))
+                .andReturn().getResponse().getContentAsString();
+        String id = body.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+
+        mvc.perform(put("/api/v1/greetings/" + id).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"message\":\"olá\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("olá"));
+        mvc.perform(put("/api/v1/greetings/" + id).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"message\":\"tchau\"}"))
+                .andExpect(status().isOk()); // 2ª atualização: @Version não pode conflitar
+
+        assertThat(events.stream(GreetingMessageChangedEvent.class)).hasSize(2);
+    }
+
+    @Test
+    void changingUnknownOrBlankIsRejected() throws Exception {
+        mvc.perform(put("/api/v1/greetings/00000000-0000-0000-0000-000000000000")
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"message\":\"x\"}"))
+                .andExpect(status().isNotFound());
+        mvc.perform(put("/api/v1/greetings/00000000-0000-0000-0000-000000000000")
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"message\":\"\"}"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

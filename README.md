@@ -75,6 +75,8 @@ docker compose up -d                          # Postgres (bancos exampleapi e ex
 5. Crie o banco em `etc/postgres/init-user-db.sh`.
 6. Use `microservices/example-api` como modelo de cada camada (`greeting`).
 
+O `template/` já traz as camadas vazias (inclusive `adapters/in/listener`); a base de eventos (`AbstractEventSourceEntity`) vem do `common`. Para usá-la, siga o padrão de "Eventos de domínio" acima, com `example-api` como modelo.
+
 `template/` fica no build para não quebrar sem ninguém perceber; remova-o do `settings.gradle` em um projeto derivado se não precisar mais dele.
 
 ## Convenções

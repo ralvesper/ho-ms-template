@@ -1,8 +1,8 @@
 package com.highonline.exampleapi.infrastructure.adapters.out.web.translator.http;
 
-import com.highonline.common.infrastructure.adapters.in.web.exceptionhandler.BadGatewayException;
-import com.highonline.common.infrastructure.adapters.in.web.exceptionhandler.GatewayTimeoutException;
-import com.highonline.common.infrastructure.adapters.in.web.exceptionhandler.UnprocessableEntityException;
+import com.highonline.common.infrastructure.adapters.out.web.BadGatewayException;
+import com.highonline.common.infrastructure.adapters.out.web.GatewayTimeoutException;
+import com.highonline.common.infrastructure.adapters.out.web.UnprocessableEntityException;
 import com.highonline.exampleapi.core.ports.out.greeting.ForTranslatingText;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;

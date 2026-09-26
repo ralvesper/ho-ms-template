@@ -40,6 +40,11 @@ class GreetingControllerIT {
     }
 
     @Test
+    void healthIsUp() throws Exception {
+        mvc.perform(get("/actuator/health")).andExpect(status().isOk());
+    }
+
+    @Test
     void rejectsBlankMessage() throws Exception {
         mvc.perform(post("/api/v1/greetings").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"message\":\"\"}"))

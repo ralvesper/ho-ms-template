@@ -1,4 +1,4 @@
-package com.highonline.common.infrastructure.adapters.in.web.exceptionhandler;
+package com.highonline.common.infrastructure.adapters.out.web;
 
 public class UnprocessableEntityException extends RuntimeException {
     public UnprocessableEntityException() {

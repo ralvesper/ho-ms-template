@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 import java.util.Map;
@@ -21,8 +22,13 @@ public class HomeController {
     @GetMapping("/")
     @SuppressWarnings("unchecked")
     public String home(Model model) {
-        Map<String, Object> page = api.get().uri("/api/v1/greetings").retrieve().body(Map.class);
-        model.addAttribute("greetings", page == null ? List.of() : (List<Map<String, Object>>) page.get("content"));
+        try {
+            Map<String, Object> page = api.get().uri("/api/v1/greetings").retrieve().body(Map.class);
+            model.addAttribute("greetings", page == null ? List.of() : (List<Map<String, Object>>) page.get("content"));
+        } catch (RestClientException e) {
+            model.addAttribute("greetings", List.of());
+            model.addAttribute("error", "API indisponível");
+        }
         return "index";
     }
 }

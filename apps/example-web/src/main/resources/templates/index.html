@@ -3,6 +3,7 @@
 <head><meta charset="UTF-8"><title>Example Web</title></head>
 <body>
 <h1>Greetings</h1>
+<p th:if="${error}" th:text="${error}"></p>
 <ul><li th:each="g : ${greetings}" th:text="${g.message}"></li></ul>
 </body>
 </html>

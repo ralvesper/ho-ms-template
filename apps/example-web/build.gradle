@@ -8,3 +8,11 @@ dependencies {
 }
 
 bootJar { archiveFileName = 'example-web.jar' }
+
+tasks.register('dockerBuild', Exec) {
+    description = 'Builds the Docker image'
+    group = 'build'
+    dependsOn('bootJar')
+    workingDir project.projectDir
+    commandLine 'docker', 'build', '.', '-t', 'highonline/example-web:dev'
+}

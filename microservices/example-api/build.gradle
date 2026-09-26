@@ -1,130 +1,49 @@
-buildscript {
-    dependencies {
-        classpath 'org.flywaydb:flyway-core:11.20.0'
-        classpath 'org.flywaydb:flyway-database-postgresql:11.20.0'
-    }
-}
-
 plugins {
-    id 'idea'
-    id 'java'
     id 'org.springframework.boot'
-    id 'org.springframework.cloud.contract' version '5.0.0'
-    id 'org.flywaydb.flyway' version '11.20.0'
 }
 
 description = 'Example API'
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-    mockitoAgent {transitive = false}
-}
-
-ext {
-    set('springCloudVersion', "2025.0.1")
-}
-
 dependencies {
     implementation project(':microservices:common')
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-flyway'
-    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-    implementation 'org.springframework.boot:spring-boot-starter-restclient'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-
-    implementation 'commons-validator:commons-validator:1.10.1'
-    implementation 'com.fasterxml.uuid:java-uuid-generator:5.2.0'
-    implementation 'io.hypersistence:hypersistence-tsid:2.1.4'
     implementation 'org.flywaydb:flyway-database-postgresql'
 
     runtimeOnly 'org.postgresql:postgresql'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-restclient-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-flyway-test'
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testImplementation 'org.testcontainers:testcontainers-postgresql'
-    testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
-    constraints {
-        testImplementation('io.rest-assured:rest-assured:6.0.0') {
-            version {
-                strictly '6.0.0'
-            }
-        }
-        testImplementation('io.rest-assured:spring-mock-mvc:6.0.0') {
-            version {
-                strictly '6.0.0'
-            }
-        }
-    }
-
-    testImplementation 'org.assertj:assertj-core:3.27.6'
-
-
-    mockitoAgent('org.mockito:mockito-core')
 }
 
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-    }
-}
-
-contracts {
-    failOnNoContracts = false
-}
-
-tasks.named('contractTest') {
-    useJUnitPlatform()
-}
-
+// *IT (precisam de Docker) rodam em integrationTest; o resto em test.
 test {
     filter {
         excludeTestsMatching("*IT")
+        failOnNoMatchingTests = false
     }
-    jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
-}
-
-tasks.named('check') {
-    dependsOn(test, contractTest, integrationTest)
 }
 
 tasks.register('integrationTest', Test) {
     description = 'Run integration tests.'
     group = 'verification'
-    jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
-
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
-
     shouldRunAfter test
-
-    useJUnitPlatform()
-
-    testLogging {
-        events "passed"
-    }
-
-    filter {
-        includeTestsMatching "*IT"
-        excludeTestsMatching "*Test"
-    }
+    filter { includeTestsMatching "*IT" }
 }
 
-bootJar {
-    archiveFileName = 'example-api.jar'
-}
+tasks.named('check') { dependsOn integrationTest }
+
+bootJar { archiveFileName = 'example-api.jar' }
 
 tasks.register('dockerBuild', Exec) {
-    description = 'Builds a multi-platform Docker image using Buildx'
+    description = 'Builds the Docker image'
     group = 'build'
     dependsOn('bootJar')
     workingDir project.projectDir
-    commandLine 'docker', 'buildx', 'build', '--platform', 'linux/arm64/v8,linux/amd64',
-            '--tag', 'highonline/example-api:dev', '.'
+    commandLine 'docker', 'build', '.', '-t', 'highonline/example-api:dev'
 }

@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Example Web</title></head>
+<body>
+<h1>Greetings</h1>
+<ul><li th:each="g : ${greetings}" th:text="${g.message}"></li></ul>
+</body>
+</html>

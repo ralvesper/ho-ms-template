@@ -1,0 +1,5 @@
+rootProject.name = 'ho-ms-template'
+
+include 'microservices:common'
+include 'microservices:example-api'
+include 'apps:example-web'

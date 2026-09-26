@@ -12,7 +12,7 @@ Template multi-module Gradle para microsserviços Spring Boot 4 (Java 25). Pacot
 
 ## Pré-requisitos
 
-JDK 25 e Docker (Postgres local e testes `*IT`). O Gradle vem pelo wrapper.
+JDK 25 (`asdf install`, versão em `.tool-versions`) e Docker (Postgres local e testes `*IT`). O Gradle vem pelo wrapper.
 
 ## Rodando
 

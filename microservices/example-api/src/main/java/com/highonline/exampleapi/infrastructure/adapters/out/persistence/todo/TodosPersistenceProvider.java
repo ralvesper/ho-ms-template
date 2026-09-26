@@ -5,9 +5,11 @@ import com.highonline.exampleapi.core.domain.model.todo.TodoId;
 import com.highonline.exampleapi.core.domain.model.todo.TodoNotFoundException;
 import com.highonline.exampleapi.core.domain.model.todo.Todos;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -28,7 +30,7 @@ public class TodosPersistenceProvider implements Todos {
     @Override
     public void add(Todo todo) {
         TodoPersistenceEntity entity = repository.findById(todo.getId().value())
-                .map(existing -> assembler.merge(existing, todo))
+                .map(existing -> assembler.merge(requireSameVersion(existing, todo), todo))
                 .orElseGet(() -> assembler.fromDomain(todo));
         repository.save(entity);
         todo.clearDomainEvents();
@@ -39,9 +41,20 @@ public class TodosPersistenceProvider implements Todos {
     @Override
     public void remove(Todo todo) {
         TodoPersistenceEntity entity = repository.findById(todo.getId().value())
-                .map(existing -> assembler.merge(existing, todo))
+                .map(existing -> assembler.merge(requireSameVersion(existing, todo), todo))
                 .orElseThrow(() -> new TodoNotFoundException(todo.getId().toString()));
         repository.delete(entity);
         todo.clearDomainEvents();
+    }
+
+    /**
+     * Hibernate ignores a version set by hand on an already-loaded entity (it uses the loaded snapshot in the
+     * UPDATE's WHERE clause), so a stale aggregate must be rejected here or the update would silently win.
+     */
+    private TodoPersistenceEntity requireSameVersion(TodoPersistenceEntity existing, Todo todo) {
+        if (!Objects.equals(existing.getVersion(), todo.getVersion())) {
+            throw new ObjectOptimisticLockingFailureException(TodoPersistenceEntity.class, existing.getId());
+        }
+        return existing;
     }
 }

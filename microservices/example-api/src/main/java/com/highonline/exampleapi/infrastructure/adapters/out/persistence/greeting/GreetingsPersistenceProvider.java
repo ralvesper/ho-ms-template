@@ -4,9 +4,11 @@ import com.highonline.exampleapi.core.domain.model.greeting.Greeting;
 import com.highonline.exampleapi.core.domain.model.greeting.GreetingId;
 import com.highonline.exampleapi.core.domain.model.greeting.Greetings;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -27,9 +29,20 @@ public class GreetingsPersistenceProvider implements Greetings {
     @Override
     public void add(Greeting greeting) {
         GreetingPersistenceEntity entity = repository.findById(greeting.getId().value())
-                .map(existing -> assembler.merge(existing, greeting))
+                .map(existing -> assembler.merge(requireSameVersion(existing, greeting), greeting))
                 .orElseGet(() -> assembler.fromDomain(greeting));
         repository.save(entity);
         greeting.clearDomainEvents();
+    }
+
+    /**
+     * Hibernate ignores a version set by hand on an already-loaded entity (it uses the loaded snapshot in the
+     * UPDATE's WHERE clause), so a stale aggregate must be rejected here or the update would silently win.
+     */
+    private GreetingPersistenceEntity requireSameVersion(GreetingPersistenceEntity existing, Greeting greeting) {
+        if (!Objects.equals(existing.getVersion(), greeting.getVersion())) {
+            throw new ObjectOptimisticLockingFailureException(GreetingPersistenceEntity.class, existing.getId());
+        }
+        return existing;
     }
 }
